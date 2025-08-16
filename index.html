@@ -1,25 +1,325 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>HR Excel Dashboard Project</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HR Excel Dashboard Project • Vishal Kumar</title>
+  <meta name="description" content="HR Analytics Excel Dashboard by Vishal Kumar: data cleaning, pivots, and interactive insights." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1:#0b0f1a;
+      --bg2:#0a1324;
+      --card:#101827cc;
+      --text:#eaf1ff;
+      --muted:#9db2ffcc;
+      --accent1:#7c3aed;
+      --accent2:#06b6d4;
+      --accent3:#22c55e;
+      --glow: 0 0 24px rgba(124,58,237,.45), 0 0 48px rgba(6,182,212,.25);
+      --radius: 20px;
+    }
+
+    /* ===== Background: subtle animated gradient + floating code ===== */
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 10% 10%, #0f1b3a 0%, transparent 60%),
+                  radial-gradient(1000px 700px at 90% 20%, #0a1d2e 0%, transparent 60%),
+                  linear-gradient(120deg, var(--bg1), var(--bg2));
+      background-size: 200% 200%, 200% 200%, 100% 100%;
+      animation: bgMove 50s ease-in-out infinite alternate;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+    @keyframes bgMove {
+      0%   { background-position: 0% 0%, 100% 0%, 0% 0%; }
+      100% { background-position: 100% 100%, 0% 100%, 0% 0%; }
+    }
+    .code-stream {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .08; /* very subtle */
+      mask-image: radial-gradient(closest-side, #000 60%, transparent);
+    }
+    .code-char {
+      position: absolute;
+      font-weight: 600;
+      letter-spacing: .04em;
+      animation: floatUp linear infinite;
+      filter: drop-shadow(0 0 6px rgba(99,102,241,.9));
+      user-select: none;
+      white-space: pre;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(100vh) translateX(0) rotate(0deg); opacity: 0; }
+      10%  { opacity: .8; }
+      90%  { opacity: .8; }
+      100% { transform: translateY(-15vh) translateX(0) rotate(360deg); opacity: 0; }
+    }
+
+    /* ===== Layout ===== */
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    header {
+      display: grid;
+      gap: 16px;
+      justify-items: center;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    /* Glowing, color-flow name */
+    .name {
+      font-size: clamp(32px, 6vw, 64px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: .02em;
+      background: conic-gradient(from 90deg,
+        var(--accent1), var(--accent2), var(--accent3), var(--accent1));
+      background-size: 200% 200%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: hueFlow 6s ease-in-out infinite;
+      text-shadow:
+        0 0 18px rgba(124,58,237,.25),
+        0 0 36px rgba(6,182,212,.18);
+    }
+    @keyframes hueFlow { 
+      0%,100% { background-position: 0% 50%; }
+      50%     { background-position: 100% 50%; }
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 6px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #121b30, #0e1628);
+      border: 1px solid #243b69;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      box-shadow: 0 6px 18px rgba(2,6,23,.25), inset 0 0 0 1px rgba(180,199,255,.04);
+    }
+    .btn:hover { 
+      transform: translateY(-2px);
+      border-color: #3e63ff;
+      box-shadow: var(--glow);
+    }
+
+    /* ===== Card sections ===== */
+    section {
+      background: linear-gradient(180deg, rgba(16,24,39,.7), rgba(11,17,30,.7));
+      border: 1px solid rgba(148,163,184,.2);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 22px;
+      box-shadow: 0 16px 50px rgba(2,6,23,.45);
+      backdrop-filter: blur(8px);
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: clamp(20px, 3.2vw, 28px);
+      letter-spacing: .01em;
+    }
+    p { line-height: 1.65; color: #dbe6ff; }
+
+    /* ===== Media grid ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat( auto-fit, minmax(260px, 1fr) );
+      gap: 16px;
+    }
+    .media {
+      position: relative;
+      overflow: clip;
+      border-radius: calc(var(--radius) - 6px);
+      background: #0e1629;
+      border: 1px solid rgba(148,163,184,.25);
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, filter .25s ease;
+      box-shadow: 0 10px 28px rgba(2,6,23,.45);
+      isolation: isolate;
+    }
+    .media img, .media video {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Soft glow animation for each image/video */
+    .media::after{
+      content:"";
+      position:absolute; inset:-2px;
+      border-radius: inherit;
+      background: radial-gradient(600px 180px at 10% -10%, rgba(124,58,237,.45), transparent 60%),
+                  radial-gradient(600px 180px at 110% 110%, rgba(6,182,212,.35), transparent 60%);
+      opacity: 0;
+      transition: opacity .4s ease;
+      z-index: -1;
+      filter: blur(8px);
+      animation: gentlePulse 5s ease-in-out infinite;
+      animation-play-state: paused;
+    }
+    @keyframes gentlePulse {
+      0%,100% { transform: scale(1); opacity: .12; }
+      50%     { transform: scale(1.02); opacity: .22; }
+    }
+    .media:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99,102,241,.65);
+      box-shadow: 0 16px 60px rgba(124,58,237,.25), 0 8px 30px rgba(6,182,212,.18);
+      filter: saturate(1.05);
+    }
+    .media:hover::after { animation-play-state: running; opacity: .3; }
+
+    /* Footer note */
+    footer {
+      opacity: .75;
+      text-align: center;
+      margin-top: 26px;
+      font-size: 14px;
+    }
+
+    /* Reduce motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+      .code-stream { display: none; }
+    }
+  </style>
 </head>
 <body>
-  <h1>HR Excel Dashboard Project</h1>
+  <!-- Animated background code stream (very slow) -->
+  <div class="code-stream" aria-hidden="true" id="codeStream"></div>
 
-  <h2>📊 Dashboard Images</h2>
-  <img src="DAshboard Clean Data HR (4).png" width="400">
-  <img src="DAshboard HR (1).png" width="400">
-  <img src="DAshboard HR (2).png" width="400">
-  <img src="DAshboard PivotTable HR (3).png" width="400">
-  <img src="DAshboard Raw Data HR (5).png" width="400">
+  <div class="wrap">
+    <header>
+      <div class="name">Vishal Kumar</div>
+      <div class="subtitle">Data Analyst • HR Analytics • Excel • Power Query • PivotTables</div>
+      <div class="links">
+        <!-- Replace the LinkedIn URL if needed -->
+        <a class="btn" href="https://www.linkedin.com/in/vishalnfskumar" target="_blank" rel="noopener">
+          <!-- Simple inline icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 4h4v4H4V4zm0 6h4v10H4V10zm6 0h4v2.5c.6-1.1 2.1-2.5 4.5-2.5 3.4 0 5.5 2.2 5.5 6.3V20h-4v-5.5c0-1.7-.7-2.8-2.2-2.8-1.3 0-2.1.9-2.4 1.9-.1.3-.1.8-.1 1.2V20h-4V10z" fill="currentColor"/>
+          </svg>
+          Connect on LinkedIn
+        </a>
+        <a class="btn" href="mailto:letmeknowvishal@gmail.com">Email Me</a>
+        <a class="btn" href="#dataset">Dataset</a>
+      </div>
+    </header>
 
-  <h2>🎥 Dashboard Video</h2>
-  <video width="600" controls>
-    <source src="Hr project dashboard vid.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+    <section id="about">
+      <h2>🧩 About the Project</h2>
+      <p>
+        This HR Excel Dashboard showcases a complete workflow—raw data → cleaning with Power Query →
+        structured PivotTables → interactive dashboard. I focused on employee demographics, attrition,
+        job roles, departments, and tenure insights. The goal is to turn HR data into clear, actionable
+        metrics for leadership and stakeholders.
+      </p>
+      <p style="margin-top:10px;">
+        <strong>Highlights:</strong> Data validation, missing value handling, calculated fields, slicers,
+        KPI cards, and visual storytelling with consistent layout & color harmony.
+      </p>
+    </section>
 
-  <h2>📂 Dataset</h2>
-  <p><a href="HR Dataset.xlsx" download>Download Excel Dataset</a></p>
+    <section id="gallery">
+      <h2>📊 Dashboard Images</h2>
+      <div class="grid">
+        <figure class="media">
+          <img src="DAshboard Clean Data HR (4).png" alt="Cleaned HR data preview" loading="lazy">
+        </figure>
+        <figure class="media">
+          <img src="DAshboard HR (1).png" alt="HR dashboard view 1" loading="lazy">
+        </figure>
+        <figure class="media">
+          <img src="DAshboard HR (2).png" alt="HR dashboard view 2" loading="lazy">
+        </figure>
+        <figure class="media">
+          <img src="DAshboard PivotTable HR (3).png" alt="PivotTables used in HR analytics" loading="lazy">
+        </figure>
+        <figure class="media">
+          <img src="DAshboard Raw Data HR (5).png" alt="Raw HR dataset snapshot" loading="lazy">
+        </figure>
+      </div>
+    </section>
+
+    <section id="video">
+      <h2>🎥 Dashboard Video</h2>
+      <figure class="media">
+        <video width="100%" controls preload="metadata" poster="" aria-label="HR dashboard walkthrough video">
+          <source src="Hr project dashboard vid.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </figure>
+    </section>
+
+    <section id="dataset">
+      <h2>📂 Dataset</h2>
+      <p>
+        <a class="btn" href="HR Dataset.xlsx" download>Download Excel Dataset</a>
+      </p>
+    </section>
+
+    <footer>
+      © <span id="year"></span> Vishal Kumar • HR Excel Dashboard Project
+    </footer>
+  </div>
+
+  <script>
+    // Footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ===== Very-slow, subtle "modern coding" floating characters =====
+    (function generateCodeStream(){
+      const container = document.getElementById('codeStream');
+      const chars = "01{}[]<>=+-*/%$#&_";
+      const cols = Math.floor(window.innerWidth / 90);  // sparse columns
+      const rows = 10;                                   // few lines only
+      const total = cols * rows;
+
+      for(let i=0;i<total;i++){
+        const span = document.createElement('span');
+        span.className = 'code-char';
+        span.textContent = chars[Math.floor(Math.random()*chars.length)];
+        const left = (i % cols) * (100 / cols) + (Math.random()*2 - 1); // small jitter
+        const delay = Math.random() * 20;               // desync
+        const duration = 55 + Math.random()*35;         // very slow
+        const size = 10 + Math.random()*8;              // small, subtle
+        span.style.left = left + 'vw';
+        span.style.fontSize = size + 'px';
+        span.style.animationDuration = duration + 's';
+        span.style.animationDelay = delay + 's';
+        container.appendChild(span);
+      }
+    })();
+  </script>
 </body>
 </html>
